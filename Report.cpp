@@ -164,7 +164,7 @@ void ReportStart(double dt){
      printTOD("Simulation begins");
      if (!myrank){
         cout << "dt= " << dt << ", ";
-	cout << "# iters = " << cb.niters << endl;
+	    cout << "# iters = " << cb.niters << endl;
         cout << "m x n = " << cb.m << " x " << cb.n << endl;
         cout << "processor geometry: " << cb.px << " x " << cb.py << endl;
         cout << endl;
