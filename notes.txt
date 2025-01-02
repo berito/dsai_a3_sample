@@ -1,0 +1,3 @@
+1D Decomposition
+In 1D decomposition, the computational grid is divided along only one axis (row-wise or column-wise).
+Each MPI process is responsible for a continuous block of rows or columns, but not both.

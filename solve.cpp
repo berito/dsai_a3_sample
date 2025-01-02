@@ -18,8 +18,13 @@
 #include "cblock.h"
 #include <malloc.h>
 #include <emmintrin.h>
+// openMPI is included only if enabled during compilation:
 #ifdef _MPI_
 #include <mpi.h>
+#endif
+// openMP is included only if enabled during compilation:
+#ifdef _OPENMP
+#include <omp.h>
 #endif
 using namespace std;
 
@@ -57,7 +62,7 @@ double L2Norm(double sumSq){
 }
 #ifndef _MPI_
 void solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Plotter *plotter, double &L2, double &Linf){
-
+ // Initialization
  // Simulated time is different from the integer timestep number
  double t = 0.0;
 
@@ -72,8 +77,17 @@ void solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Pl
  int innerBlockRowEndIndex = (((m+2)*(n+2) - 1) - (n)) - (n+2);
 
 
+//  // Log OpenMP status
+//     #ifdef _OPENMP
+//     std::cout << "OpenMP is enabled. Using " << omp_get_max_threads() << " threads." << std::endl;
+//     #else
+//     std::cout << "OpenMP is not enabled. Running in serial mode(single thread)." << std::endl;
+//     #endif
+ 
  // We continue to sweep over the mesh until the simulation has reached
  // the desired number of iterations
+
+// Main simulation loop
   for (niter = 0; niter < cb.niters; niter++){
   
       if  (cb.debug && (niter==0)){
@@ -98,6 +112,8 @@ void solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Pl
     */
     
     // 4 FOR LOOPS set up the padding needed for the boundary conditions
+
+    // Apply boundary conditions (copy ghost cells)
     int i,j;
 
     // Fills in the TOP Ghost Cells
@@ -125,18 +141,28 @@ void solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Pl
 #define FUSED 1
 
 #ifdef FUSED
+    // Fused PDE and ODE solving
+    #ifdef _OPENMP
+    #pragma omp parallel for private(j, i, E_tmp, E_prev_tmp, R_tmp) collapse(2) schedule(static)
+    #endif
     // Solve for the excitation, a PDE
     for(j = innerBlockRowStartIndex; j <= innerBlockRowEndIndex; j+=(n+2)) {
         E_tmp = E + j;
 	E_prev_tmp = E_prev + j;
         R_tmp = R + j;
 	for(i = 0; i < n; i++) {
-	    E_tmp[i] = E_prev_tmp[i]+alpha*(E_prev_tmp[i+1]+E_prev_tmp[i-1]-4*E_prev_tmp[i]+E_prev_tmp[i+(n+2)]+E_prev_tmp[i-(n+2)]);
+           // PDE computation
+	        E_tmp[i] = E_prev_tmp[i]+alpha*(E_prev_tmp[i+1]+E_prev_tmp[i-1]-4*E_prev_tmp[i]+E_prev_tmp[i+(n+2)]+E_prev_tmp[i-(n+2)]);
+            // ODE computation
             E_tmp[i] += -dt*(kk*E_prev_tmp[i]*(E_prev_tmp[i]-a)*(E_prev_tmp[i]-1)+E_prev_tmp[i]*R_tmp[i]);
             R_tmp[i] += dt*(epsilon+M1* R_tmp[i]/( E_prev_tmp[i]+M2))*(-R_tmp[i]-kk*E_prev_tmp[i]*(E_prev_tmp[i]-b-1));
         }
     }
 #else
+    // Non-Fused PDE solving
+        #ifdef _OPENMP
+        #pragma omp parallel for private(j, i, E_tmp, E_prev_tmp) collapse(2) schedule(static)
+        #endif
     // Solve for the excitation, a PDE
     for(j = innerBlockRowStartIndex; j <= innerBlockRowEndIndex; j+=(n+2)) {
         E_tmp = E + j;
@@ -150,7 +176,10 @@ void solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Pl
      * Solve the ODE, advancing excitation and recovery variables
      *     to the next timtestep
      */
-
+    // Non-Fused ODE solving
+        #ifdef _OPENMP
+        #pragma omp parallel for private(j, i, E_tmp, R_tmp, E_prev_tmp) collapse(2) schedule(static)
+        #endif
     for(j = innerBlockRowStartIndex; j <= innerBlockRowEndIndex; j+=(n+2)) {
         E_tmp = E + j;
         R_tmp = R + j;

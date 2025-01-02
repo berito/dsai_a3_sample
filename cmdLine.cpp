@@ -31,7 +31,9 @@ void cmdLine(int argc, char *argv[]){
 	{"px", required_argument, 0, 'x'},
 	{"py", required_argument, 0, 'y'},
 	{"nocomm", no_argument, 0, 'k'},
+    {"time", required_argument, 0, 't'}, // Added simulation tim
 	{"debug", no_argument, 0, 'd'},
+    {"output", required_argument, 0, 'o'}, // New output file name option
 
  };
     int nprocs=1, myrank=0;
@@ -43,7 +45,7 @@ void cmdLine(int argc, char *argv[]){
     // Process command line arguments
  for(int ac=1;ac<argc;ac++) {
     int c;
-    while ((c=getopt_long(argc,argv,"n:i:s:x:y:p:kd",long_options,NULL)) != -1){
+    while ((c=getopt_long(argc,argv,"n:i:s:x:y:p:t:kd:o:",long_options,NULL)) != -1){
         switch (c) {
 
 	    // Size of the computational box
@@ -79,7 +81,14 @@ void cmdLine(int argc, char *argv[]){
             case 'p':
                 cb.plot_freq = atoi(optarg);
                 break;
-
+            // Simulation time
+                case 't':
+                    cb.simTime = atof(optarg);
+                    if (cb.simTime <= 0.0) {
+                        cerr << "Error: Simulation time must be greater than 0.\n";
+                        exit(-1);
+                    }
+                    break;
             // Debug ouput
             case 'd':
                 cb.debug = true;
@@ -89,16 +98,23 @@ void cmdLine(int argc, char *argv[]){
             case 'k':
                 cb.noComm = true;
                 break;
+            
+                // Output file name
+            case 'o':
+                cb.outputFileName = optarg;
+                break;
 
 	    // Error
             default:
                 cout << "Usage: apf [-n <domain size>] [-i <# iterations>]";
                 cout << "\n\t    ";
                 cout << " [-s <stats frequency>[-p <plot frequency>]\n\t";
-		cout << "     [-x <x processor geometry>]";
-		cout << "     [-y <x processor geometry>]";
-		cout << "     [-d <debug>]";
-		cout << "     [-k <no communication>]" << endl;
+                cout << "     [-x <x processor geometry>]";
+                cout << "     [-y <x processor geometry>]";
+                cout << "     [-d <debug>]";
+                cout << "     [-t <simulation time>]";
+                cout << "     [-o <output file name>]";
+                cout << "     [-k <no communication>]" << endl;
                 cout << endl;
                 exit(-1);
             }

@@ -20,3 +20,4 @@ Note: This project was executed as a part of the CSE 260 Parallel Computation co
    If the program was compiled with OpenMP support but you want to enforce a single thread at runtime, set the following environment variable:
    
     - export OMP_NUM_THREADS=1 &&  ./apf
+ - inorder to run with fused (opimized ODE) you need to compile the code using fused=1,if not it will run with less optimized code but the openmp is enabled to run with out openmp just prvide the OMP_NUM_THREADS=1 

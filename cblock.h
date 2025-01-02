@@ -8,4 +8,6 @@ typedef struct _control_block {
     int niters;
     bool debug;
     bool wait;
+    int simTime;   // Simulation time (passed via -t)
+    std::string outputFileName = "strong_scaling.csv"; // Default output file
 } control_block;
