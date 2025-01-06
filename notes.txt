@@ -1,3 +1,12 @@
 1D Decomposition
-In 1D decomposition, the computational grid is divided along only one axis (row-wise or column-wise).
-Each MPI process is responsible for a continuous block of rows or columns, but not both.
+    In 1D decomposition, the computational grid is divided along only one axis (row-wise or column-wise).
+    Each MPI process is responsible for a continuous block of rows or columns, but not both.
+MPI Decomposition:
+    In 1D geometry, either px or py is set to 1:
+    Example for 4 processes:
+        px=1, py=4 (Column decomposition): 1D geometry, dividing the grid into 4 columns.
+        px=4, py=1 (Row decomposition): 1D geometry, dividing the grid into 4 rows.
+        
+Communication:
+    Simpler communication since neighboring processes only need to exchange data along one boundary (either rows or columns).
+    Requires less MPI messaging compared to 2D geometry.

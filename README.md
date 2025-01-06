@@ -1,3 +1,9 @@
+
+# vscode (continues reconnection and unable to connect solution)
+   - this is temporary solution need to find the solution 
+   -  ssh -A -o ForwardAgent=yes -o ServerAliveInterval=60 server2
+- make script executable 
+  - chmod +x file_name.sh/.py 
 Note: This project was executed as a part of the CSE 260 Parallel Computation course by Bryan Chin at UC San Diego in Fall 2022.
 -  ./apf -n 800 -i 2000 -p 100        // run serial code 
 - mpirun ./apf -n 800 -i 2000 -p 100  // run mpi code 
