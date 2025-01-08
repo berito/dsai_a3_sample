@@ -1,5 +1,5 @@
 .vscode
 notes.txt
 env
-data_remove
-build
+data_remove/
+build/
