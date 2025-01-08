@@ -163,14 +163,14 @@ void solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Pl
         #ifdef _OPENMP
         #pragma omp parallel for private(j, i, E_tmp, E_prev_tmp) collapse(2) schedule(static)
         #endif
-    // Solve for the excitation, a PDE
-    for(j = innerBlockRowStartIndex; j <= innerBlockRowEndIndex; j+=(n+2)) {
-        E_tmp = E + j;
-            E_prev_tmp = E_prev + j;
-            for(i = 0; i < n; i++) {
-                E_tmp[i] = E_prev_tmp[i]+alpha*(E_prev_tmp[i+1]+E_prev_tmp[i-1]-4*E_prev_tmp[i]+E_prev_tmp[i+(n+2)]+E_prev_tmp[i-(n+2)]);
+            // Solve for the excitation, a PDE
+            for(j = innerBlockRowStartIndex; j <= innerBlockRowEndIndex; j+=(n+2)) {
+                E_tmp = E + j;
+                    E_prev_tmp = E_prev + j;
+                    for(i = 0; i < n; i++) {
+                        E_tmp[i] = E_prev_tmp[i]+alpha*(E_prev_tmp[i+1]+E_prev_tmp[i-1]-4*E_prev_tmp[i]+E_prev_tmp[i+(n+2)]+E_prev_tmp[i-(n+2)]);
+                    }
             }
-    }
 
     /* 
      * Solve the ODE, advancing excitation and recovery variables
@@ -180,15 +180,15 @@ void solve(double **_E, double **_E_prev, double *R, double alpha, double dt, Pl
         #ifdef _OPENMP
         #pragma omp parallel for private(j, i, E_tmp, R_tmp, E_prev_tmp) collapse(2) schedule(static)
         #endif
-    for(j = innerBlockRowStartIndex; j <= innerBlockRowEndIndex; j+=(n+2)) {
-        E_tmp = E + j;
-        R_tmp = R + j;
-	E_prev_tmp = E_prev + j;
-        for(i = 0; i < n; i++) {
-	  E_tmp[i] += -dt*(kk*E_prev_tmp[i]*(E_prev_tmp[i]-a)*(E_prev_tmp[i]-1)+E_prev_tmp[i]*R_tmp[i]);
-	  R_tmp[i] += dt*(epsilon+M1* R_tmp[i]/( E_prev_tmp[i]+M2))*(-R_tmp[i]-kk*E_prev_tmp[i]*(E_prev_tmp[i]-b-1));
+        for(j = innerBlockRowStartIndex; j <= innerBlockRowEndIndex; j+=(n+2)) {
+            E_tmp = E + j;
+            R_tmp = R + j;
+        E_prev_tmp = E_prev + j;
+            for(i = 0; i < n; i++) {
+        E_tmp[i] += -dt*(kk*E_prev_tmp[i]*(E_prev_tmp[i]-a)*(E_prev_tmp[i]-1)+E_prev_tmp[i]*R_tmp[i]);
+        R_tmp[i] += dt*(epsilon+M1* R_tmp[i]/( E_prev_tmp[i]+M2))*(-R_tmp[i]-kk*E_prev_tmp[i]*(E_prev_tmp[i]-b-1));
+            }
         }
-    }
 #endif
      /////////////////////////////////////////////////////////////////////////////////
 
